@@ -1,22 +1,20 @@
-require 'open-uri'
-require 'json'
 require 'sinatra'
+require_relative 'query_controller'
+
+cache = {}
 
 get '/' do
-  if params[:actor]
-    url = "https://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&query=SELECT+%3Ff+%0D%0AWHERE+%7B%0D%0A%3Ff+rdf%3Atype+dbo%3AFilm+.%0D%0A%3Ff+dbo%3Astarring+dbr%3A#{params[:actor]}+.%0D%0A%7D&format=application%2Fsparql-results%2Bjson&timeout=30000&signal_vo"
-    endpoint = URI.open(url).read
-    films = JSON.parse(endpoint)
-    @result = films["results"]["bindings"].map do |film|
-      film["f"]["value"].gsub(/^.*resource\//, "").gsub("_", " ")
+  if valid_params?
+    unless @result = cache[@query]
+      dbpedia_call
+      cache[@query] = @result
     end
-  elsif params[:film]
-    url = "https://dbpedia.org/sparql?default-graph-uri=http%3A%2F%2Fdbpedia.org&query=SELECT+%3Fstarring%0D%0AWHERE+%7B%0D%0A%3Ffilm+rdfs%3Alabel+%22#{params[:film]}%22%40en+%3B%0D%0Adbo%3Astarring++%3Fstarring+.%0D%0A%7D&format=application%2Fsparql-results%2Bjson&timeout=30000&signal_void=on&signal_unconnected=on"
-    endpoint = URI.open(url).read
-    actors = JSON.parse(endpoint)
-    @result = actors
+    @query_type == "actor" ? {:films => @result}.to_json : {:actors => @result}.to_json
   else
-    @result = "no input"
+    "Invalid input = please query in the format http://localhost:4567/?actor=actor_name or http://localhost:4567/?film=film_name"
   end
-  erb :home
+end
+
+error 404 do
+  "I'm sorry, that is not a valid endpoint - please query in the format http://localhost:4567/?actor=actor_name or http://localhost:4567/?film=film_name"
 end
