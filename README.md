@@ -1,6 +1,6 @@
 ## PIGEON
 
-# Running the app
+### Running the app
 
 - From your command line run 'git clone '
 - Run 'bundle install'
