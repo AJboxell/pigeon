@@ -4,9 +4,9 @@ require_relative 'query_controller'
 cache = {}
 
 get '/' do
-  if valid_params?
-    unless @result = cache[@query]
-      dbpedia_call
+  if valid_params?  #/ the app will only respond to queries for 'actor' or 'film' /#
+    unless @result = cache[@query]  #/ if the query is already in the 'cache', then the result will be taken from there /#
+      dbpedia_call #/ else, the app calls dbpedia and then 'caches' the query and result /#
       cache[@query] = @result
     end
     @query_type == "actor" ? {:films => @result}.to_json : {:actors => @result}.to_json

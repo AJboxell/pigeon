@@ -10,7 +10,7 @@ end
 def dbpedia_call
   dbpedia_response = parse(sparql_query)
   @result = params[:actor] ? extract_values(dbpedia_response, "f") : extract_values(dbpedia_response, "starring")
-  if @result == []
+  if @result == []  #/ this block deals with some of the format inconsistency in dbpedia /#
     dbpedia_response = parse(sparql_query.gsub("_", "+"))
     @result = params[:actor] ? extract_values(dbpedia_response, "f") : extract_values(dbpedia_response, "starring")
   end
